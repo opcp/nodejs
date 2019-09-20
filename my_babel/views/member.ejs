@@ -1,0 +1,23 @@
+<%- include('parts/html_head') %>
+<%- include('parts/navbar') %>
+<div class="container">
+    <table class="table table-border">
+        <thead>
+            <tr>
+                <th>編號</th>
+                <th>姓名</th>
+                <th>年齡</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% for(let item of member) { %>
+            <tr>
+                <td><%= item.id  %></td>
+                <td><%= item.name  %></td>
+                <td><%= item.age  %></td>
+            </tr>
+            <% } %>
+        </tbody>
+    </table>
+</div>
+<%- include('parts/html_foot') %>
