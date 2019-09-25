@@ -77,6 +77,26 @@ app.post('/try_upload',upload.single('avatar'),(req, response)=>{
     }
 })
 
+app.get('/my_params1/:action?/:id', (req, response)=>{
+    response.json(req.params);
+});
+
+app.get('/my_params2/*?/*', (req, response)=>{
+    response.json(req.params);
+});
+
+app.get(/^\/09\d{2}\d{3}\d{3}$/,(req, response)=>{
+    let str = req.url.slice(1,11);
+    str = str.split('-').join('');
+    response.send(`手機: ${str}`)
+});
+
+const admin1 = require(__dirname + '/admin/admin1')
+admin1(app)
+
+app.use(require(__dirname + '/admin/admin2'));
+app.use('/admin3',require(__dirname + '/admin/admin3'))
+
 
 app.use((req,response)=>{
     response.type('text/plain')
