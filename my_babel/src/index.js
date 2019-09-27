@@ -5,11 +5,33 @@ const app = express()
 const multer =require('multer')
 const upload = multer({dest:'tmp_upload/'})
 const fs = require('fs');
-
+const session = require('express-session')
+const moment = require('moment-timezone')
+const mysql = require('mysql')
+const bluebird = require('bluebird')
+const cors =require('cors')
+const db = mysql.createConnection({
+    host:'localhost',
+    user:'opcp',
+    password:'opcp2428',
+    database:'mytest'
+})
+db.connect();
+bluebird.promisifyAll(db)
 // const urlencodeparser=body_parser.urlencoded({extended:false});
 
 app.use(body_parser.urlencoded({extended:false}))
 app.use(body_parser.json())
+app.use(cors())
+
+app.use(session({
+    saveUninitialized:false,
+    resave:false,
+    secret:'dsagdfasf',
+    cookie:{
+        maxAge:1200000,
+    }
+}))
 
 app.set('view engine','ejs')
 
@@ -97,6 +119,67 @@ admin1(app)
 app.use(require(__dirname + '/admin/admin2'));
 app.use('/admin3',require(__dirname + '/admin/admin3'))
 
+app.use('/try_session',(req,response)=>{
+    req.session.my_views = req.session.my_views || 0
+    req.session.my_views++
+    
+    response.json({
+        name:'peter',
+        'times':req.session.my_views
+    })
+})
+
+app.use('/try_moment',(req,response)=>{
+    const fm = 'YYYY-MM-DD HH:mm:ss'
+    const mo1 = moment(req.session.cookie.expires)
+    const mo2 = moment(new Date())
+
+    response.contentType('text/plain');
+    response.write(req.session.cookie.expires + "\n")
+    response.write('台北'+mo1.format(fm)+"\n")
+    response.write('倫敦'+mo1.tz('Europe/London').format(fm) + "\n")
+    response.write(mo2.format(fm)+"\n")
+    response.end(JSON.stringify(req.session))
+})
+
+app.get('/try_mysql',(req,response)=>{
+    const sql = "SELECT * FROM `test` WHERE `name` LIKE ? "
+    db.query(sql,["%shan%"],(error,results,fields)=>{
+        response.render('try_db',{
+            rows:results
+        })
+    })
+})
+
+app.get('/try_promise/:page?',(req,response)=>{
+    let page = req.params.page || 1
+    let perPage = 10
+    let output = {}
+
+    db.queryAsync("SELECT COUNT(1) total FROM `test`")
+    .then(results=>{
+        output.total = results[0].total
+        return db.queryAsync(`SELECT * FROM test LIMIT ${(page-1)*perPage},${perPage}`)
+    })
+    .then(results=>{
+        output.rows = results
+        response.json(output)
+    })
+    .catch(error=>{
+        console.log(error)
+        response.send(error)
+    })
+})
+
+app.get('/try_session',(req,response)=>{
+    req.session.my_views = req.session.my_views || 0;
+    req.session.my_views++
+
+    response.json({
+        aa:'hello',
+        'my_views':req.session.my_views
+    })
+})
 
 app.use((req,response)=>{
     response.type('text/plain')

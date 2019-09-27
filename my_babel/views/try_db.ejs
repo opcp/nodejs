@@ -1,0 +1,22 @@
+<%- include('parts/html_head') %>
+<div class="container">
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">name</th>
+            <th scope="col">birthday</th>
+          </tr>
+        </thead>
+        <tbody>
+        <% for(let r of rows) { %>
+          <tr>
+            <td><%= r.sid %></td>
+            <td><%= r.name %></td>
+            <td><%= r.birthday %></td>
+          </tr>
+          <% } %>
+        </tbody>
+      </table>
+  </div>
+<%- include('parts/html_foot') %>
